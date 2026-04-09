@@ -1,4 +1,4 @@
-trigger UpdateAvailableCopies on Lending__c (after insert , after update, after undelete , after delete){
+trigger BookAvailabilityLending on Lending__c (after insert , after update, after undelete , after delete){
     
     Set<Id> bookIds = new Set<Id>();
     
@@ -22,14 +22,14 @@ trigger UpdateAvailableCopies on Lending__c (after insert , after update, after 
     
     if (!bookIds.isEmpty()) {
         
-        List<Book__c> books = [SELECT Id,Active_Lendings__c, 
-        (SELECT Id FROM Lendings__r WHERE Is_Active__c = TRUE) 
-    FROM Book__c 
-    WHERE Id IN :bookIds];
+        List<Book__c> books = [SELECT Id, Active_Lendings__c, 
+            (SELECT Id FROM Lendings1__r WHERE Is_Active__c = TRUE) 
+            FROM Book__c 
+            WHERE Id IN :bookIds];
         
         
         for (Book__c book : books) {
-            book.Active_Lendings__c = book.Lendings__r.size();
+            book.Active_Lendings__c = book.Lendings1__r.size();
         }
         
         
