@@ -23,6 +23,11 @@ public with sharing class FavouriteBookGenreHelper {
             
             System.debug('Processing - User: ' + userId + ', Genre: ' + genre);
             
+            if (genre == null) {
+                System.debug('Genre is null, skipping');
+                continue;
+            }
+            
             if (!userGenreCount.containsKey(userId)) {
                 userGenreCount.put(userId, new Map<String, Integer>());
             }
@@ -35,16 +40,21 @@ public with sharing class FavouriteBookGenreHelper {
             }
         }
         
+        System.debug('User Genre Count: ' + userGenreCount);
+        
         List<User> usersToUpdate = new List<User>();
         
         for (Id userId : userGenreCount.keySet()) {
             
             String favouriteGenre = getFavouriteGenre(userGenreCount.get(userId));
             
+            System.debug('User: ' + userId + ', Favourite Genre: ' + favouriteGenre);
+            
             usersToUpdate.add(new User(Id = userId, Favourite_Book_Genre__c = favouriteGenre));
         }
         
         if (!usersToUpdate.isEmpty()) {
+            System.debug('Updating ' + usersToUpdate.size() + ' users');
             update usersToUpdate;
         }
         
