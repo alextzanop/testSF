@@ -1,4 +1,4 @@
-public with sharing class FavouriteBookGenreHelper {
+public without sharing class FavouriteBookGenreHelper {
     public static void updateFavouriteGenre(Set<Id> affectedUserIds) {
         
         if(affectedUserIds.isEmpty()) {
