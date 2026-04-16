@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Start_date_before_End_date</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND( NOT( ISBLANK(Start_date__c) ) ,Start_date__c&gt;End_date__c)</errorConditionFormula>
+    <errorDisplayField>Book__c</errorDisplayField>
+    <errorMessage>A Lending End date  must ALWAYS be after its start date.</errorMessage>
+</ValidationRule>
