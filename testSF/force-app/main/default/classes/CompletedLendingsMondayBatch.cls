@@ -3,19 +3,29 @@ public with sharing class CompletedLendingsMondayBatch implements Database.Batch
     public static String CRON_EXP = '0 2 ? * MON *';
     
     
-    public Database.QueryLocator  start(Database.BatchableContext bc) {
-        return Database.getQueryLocator('SELECT Id FROM Lending__c WHERE Is_Active__c  = False', AccessLevel.USER_MODE);
+    public Database.QueryLocator start(Database.BatchableContext bc) {
+        return Database.getQueryLocator(
+            'SELECT Id FROM Lending__c WHERE Is_Active__c = False',
+        AccessLevel.SYSTEM_MODE
+            );
     }
     
     public void execute(Database.BatchableContext bc, List<Lending__c> lendings){
+        System.debug(' EXECUTE CALLED - Records: ' + lendings.size());
+        
         if(!lendings.isEmpty()){
+            System.debug(' Processing ' + lendings.size() + ' lendings');
             
             String jsonBody = JSON.serialize(lendings);
+            System.debug(' JSON Body: ' + jsonBody);
+            
             
             HttpRequest request = makePostCallout(jsonBody);
             
             Http http = new Http();
             HttpResponse response = http.send(request);
+            System.debug(' Callout Status: ' + response.getStatusCode());
+            
             
             if (response.getStatusCode() == 200) {
                 System.debug(' Callout successful: ' + response.getBody());
@@ -25,6 +35,8 @@ public with sharing class CompletedLendingsMondayBatch implements Database.Batch
                 System.debug('Error: ' + response.getBody());
             }
             
+        } else {
+            System.debug(' No lendings to process.');
         }
         
     }
