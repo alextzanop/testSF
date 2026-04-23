@@ -158,7 +158,7 @@
         <label>Library Name</label>
         <type>Text</type>
     </nameField>
-    <pluralLabel>LIbraries</pluralLabel>
+    <pluralLabel>Libraries</pluralLabel>
     <searchLayouts></searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>

@@ -1,6 +1,6 @@
 public with sharing class CompletedLendingsMondayBatch implements Database.Batchable<SObject> , Schedulable, Database.AllowsCallouts{
     
-    public static String CRON_EXP = '0 2 ? * MON *';
+    public static String CRON_EXP = '0 0 2 ? * MON *';
     
     
     public Database.QueryLocator start(Database.BatchableContext bc) {

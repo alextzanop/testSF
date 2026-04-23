@@ -1,0 +1,38 @@
+<template>
+    <div class="slds-grid slds-gutters">
+        <div class="slds-m-around_medium">
+            <lightning-card title="Search & Filter">
+                <h3 class="slds-text-heading_small slds-m-bottom_medium">Filter by Library</h3>
+                <div>
+                    <lightning-combobox name="Libraries" value={selectedValue} options={dropdownOptions}
+                        onchange={handleLibraryChange} placeholder=" Choose a Library ">
+                    </lightning-combobox>
+                    <lightning-spinner if:true={isLoading} alternative-text="Loading...">
+                    </lightning-spinner>
+
+                    <div if:true={errorMessage} class="slds-text-color_error">
+                        <p>{errorMessage}</p>
+                    </div>
+                </div>
+                <div>
+                    <lightning-input type="text" value={searchTerm} placeholder="Search..."
+                        onchange={handleSearchInputChange} class="slds-col slds-size_1-of-2">
+                    </lightning-input>
+                    <lightning-button label="Search" onclick={handleSearchClick} class="slds-m-left_small">
+                    </lightning-button>
+                </div>
+            </lightning-card>
+        </div>
+
+        <div class="slds-col slds-size_3-of-5">
+            <lightning-card title="Search Results" class="slds-m-top_large">
+                <h3 class="slds-text-heading_small slds-m-top_large">Books</h3>
+                <lightning-datatable key-field="name" data={bookData} columns={bookColumns} hide-checkbox-column>
+                </lightning-datatable>
+                <h3 class="slds-text-heading_small slds-m-top_large">Users</h3>
+                <lightning-datatable key-field="name" data={userData} columns={userColumns} hide-checkbox-column>
+                </lightning-datatable>
+            </lightning-card>
+        </div>
+    </div>
+</template>
