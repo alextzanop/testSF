@@ -2,8 +2,7 @@ import { LightningElement, wire } from 'lwc';
 import getLibraries from '@salesforce/apex/LibraryController.getLibraries';
 import getBooksForLibrary from '@salesforce/apex/LibraryBooksController.getBooksForLibrary';
 import getLibraryUsers from '@salesforce/apex/LibraryUsersController.getLibraryUsers';
-import searchBooks from '@salesforce/apex/LibrarySearchController.searchBooks';
-import searchUsers from '@salesforce/apex/LibrarySearchController.searchUsers';
+import search from '@salesforce/apex/LibrarySearchController.search';
 
 export default class SearchLib extends LightningElement {
 
@@ -100,27 +99,25 @@ export default class SearchLib extends LightningElement {
     }
 
     searchInputTerm(searchTerm) {
-        try {
-            this.isLoading = true;
 
-            Promise.all([
-                searchBooks({ searchTerm }),
-                searchUsers({ searchTerm })
-            ]).then(([books, users]) => {
-                console.log(' Books result:', books);
-                console.log(' Users result:', users);
-                this.bookData = books;
-                this.userData = users;
+        this.isLoading = true;
+
+        search({ searchTerm })
+            .then((wrapper) => {
+                console.log(' Wrapper result:', wrapper);
+                this.bookData = wrapper.books;
+                this.userData = wrapper.users;
+                this.isLoading = false;
+            })
+            .catch(error => {
+                console.error('Error during search:', error);
+                this.errorMessage = error?.body?.message || 'Error searching';
                 this.isLoading = false;
             });
 
-        } catch (error) {
-            console.error('Error during search:', error);
-            this.errorMessage = 'Error searching: ' + error.body.message;
-            this.isLoading = false;
-        }
-    }
-
-
-
+    } catch(error) {
+        console.error('Unexpected error:', error);
+        this.errorMessage = 'An unexpected error occurred: ' + error.body.message;
+        this.isLoading = false;
+    } s
 }
