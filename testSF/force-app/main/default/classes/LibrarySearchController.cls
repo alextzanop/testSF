@@ -17,61 +17,65 @@ public with sharing class LibrarySearchController {
     @AuraEnabled
     public static DataWrapper search(String searchTerm) {
         try {
-            // String escapedSearchTerm = String.escapeSingleQuotes('*' + searchTerm + '*');
-            
-            System.debug('=== SEARCH START ===');
-            System.debug('Raw Input: ' + searchTerm);
-            
             String trimedSearchTerm = searchTerm != null ? searchTerm.trim() : '';
-            System.debug(' Search Term: ' + trimedSearchTerm);
+            System.debug('Search Term: ' + trimedSearchTerm);
+            
+            if (String.isBlank(trimedSearchTerm)) {
+                return new DataWrapper(new List<Book__c>(), new List<User>());
+            }
             
             Boolean isNumeric = isNumericValue(trimedSearchTerm);
             System.debug('Is Numeric: ' + isNumeric);
             
-            String finalSearchTerm = trimedSearchTerm;
-            if (isNumeric) {
-                finalSearchTerm = trimedSearchTerm + '*';
-                System.debug('Numeric Search - Final Term: ' + finalSearchTerm);
-            } else {
-                System.debug('Text Search - Final Term: ' + finalSearchTerm);
-            }
-            
-            System.debug('Executing SOSL with: ' + finalSearchTerm);
-            List<List<SObject>> results = [
-                FIND :finalSearchTerm IN ALL FIELDS
-                RETURNING Book__c(Id, Name, Total_Number_of_Copies__c, Availables_copies__c),
-            User(Id, Name, Email, Gender__c)
-                ];
-            
-            
-            System.debug('SOSL Results Count: ' + results.size());
-            System.debug('Books Count: ' + (results.size() > 0 ? results[0].size() : 0));
-            System.debug('Users Count: ' + (results.size() > 1 ? results[1].size() : 0));
-            
             List<Book__c> books = new List<Book__c>();
             List<User> users = new List<User>();
             
-            if (results.size() > 0 && results[0] != null && results[0].size() > 0) {
-                books = (List<Book__c>) results[0];
-                System.debug(' Found ' + books.size() + ' books');
+            if (isNumeric) {
+                System.debug('Numeric search');
+                
+                Decimal numericValue = Decimal.valueOf(trimedSearchTerm);
+                
+                books = [
+                    SELECT Id, Name, Total_Number_of_Copies__c, Availables_copies__c
+                    FROM Book__c
+                    WHERE Total_Number_of_Copies__c = :numericValue
+                       OR Availables_copies__c = :numericValue
+                    LIMIT 100
+                ];
+                
+                System.debug('Books found (numeric): ' + books.size());
+                
             } else {
-                System.debug(' No books found');
+                System.debug('Text search');
+                
+                String searchPattern = '%' + trimedSearchTerm + '%';
+                
+                books = [
+                    SELECT Id, Name, Total_Number_of_Copies__c, Availables_copies__c
+                    FROM Book__c
+                    WHERE Name LIKE :searchPattern 
+                    LIMIT 100
+                ];
+                
+                System.debug('Books found (text): ' + books.size());
+                
+                users = [
+                    SELECT Id, Name, Email, Gender__c
+                    FROM User
+                    WHERE Name LIKE :searchPattern
+                       OR Email LIKE :searchPattern
+                       OR Gender__c LIKE :searchPattern
+                    LIMIT 100
+                ];
+                
+                System.debug('Users found (text): ' + users.size());
             }
-            
-            if (results.size() > 1 && results[1] != null && results[1].size() > 0) {
-                users = (List<User>) results[1];
-                System.debug(' Found ' + users.size() + ' users');
-            } else {
-                System.debug(' No users found');
-            }
-            System.debug('Creating DataWrapper with ' + books.size() + ' books and ' + users.size() + ' users');
             
             DataWrapper wrapper = new DataWrapper(books, users);
             return wrapper;
-        } catch (Exception e) {
-            System.debug(' Error: ' + e.getMessage());
-            System.debug(' Stack: ' + e.getStackTraceString());
             
+        } catch (Exception e) {
+            System.debug('Error: ' + e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -87,6 +91,7 @@ public with sharing class LibrarySearchController {
             return false;
         }
     }
+    
     
     // @AuraEnabled
     // public static List<Book__c> searchBooks(String searchTerm) {
